@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survey Results - <%= survey.title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-poll me-2"></i>Survey App
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">Welcome, <%= user.username %></span>
+                <a href="/admin/dashboard" class="btn btn-outline-light btn-sm me-2">Dashboard</a>
+                <form action="/auth/logout" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4" data-results-page="true">
+        <!-- Hidden data elements for JavaScript -->
+        <script type="application/json" id="results-data"><%- JSON.stringify(results) %></script>
+        <div id="total-responses" style="display: none;"><%= totalResponses %></div>
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>
+                <i class="fas fa-chart-bar me-2"></i>
+                Survey Results: <%= survey.title %>
+            </h1>
+            <div class="badge bg-primary fs-6">
+                <%= totalResponses %> Total Responses
+            </div>
+        </div>
+
+        <% if (survey.description) { %>
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <%= survey.description %>
+            </div>
+        <% } %>
+
+        <% if (totalResponses === 0) { %>
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-chart-line fa-5x text-muted mb-4"></i>
+                    <h3 class="text-muted">No responses yet</h3>
+                    <p class="text-muted">This survey hasn't received any responses yet.</p>
+                </div>
+            </div>
+        <% } else { %>
+            <div class="row">
+                <% Object.keys(results).forEach((questionId, index) => { 
+                    const result = results[questionId];
+                %>
+                    <div class="col-lg-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <span class="badge bg-secondary me-2"><%= index + 1 %></span>
+                                    <%= result.question %>
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div style="position: relative; height: 300px;">
+                                    <canvas id="chart-<%= questionId %>"></canvas>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <h6>Response Breakdown:</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <% Object.entries(result.responses).forEach(([answer, count]) => { %>
+                                                <tr>
+                                                    <td>
+                                                        <% if (result.type === 'rating') { %>
+                                                            <%= answer %> Star<%= answer === '1' ? '' : 's' %>
+                                                        <% } else { %>
+                                                            <%= result.options.find(opt => opt.value === answer)?.text || answer %>
+                                                        <% } %>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <strong><%= count %></strong>
+                                                        (<%= ((count / totalResponses) * 100).toFixed(1) %>%)
+                                                    </td>
+                                                </tr>
+                                            <% }) %>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        <% } %>
+
+        <div class="mt-4">
+            <a href="/admin/dashboard" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/results.js"></script>
+</body>
+</html>

@@ -1,0 +1,240 @@
+/* Custom CSS for professional styling */
+:root {
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #0dcaf0;
+    --light-color: #f8f9fa;
+    --dark-color: #212529;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+/* Survey Cards */
+.survey-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.survey-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Question Styling */
+.question-container {
+    background-color: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.question-number {
+    display: inline-block;
+    background-color: var(--primary-color);
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 30px;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.question-title {
+    color: var(--dark-color);
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+/* Rating Scale Styling */
+.rating-scale {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 6px;
+}
+
+.rating-group {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.rating-btn {
+    flex: 1;
+    margin: 0 2px;
+}
+
+.rating-btn:checked + .rating-btn,
+.rating-btn.active {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+/* Multiple Choice Options */
+.options-container {
+    padding-left: 1rem;
+}
+
+.form-check {
+    padding: 0.75rem;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.form-check:hover {
+    background-color: #f8f9fa;
+}
+
+.form-check-input:checked ~ .form-check-label {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* Feature Cards */
+.feature-card {
+    background-color: white;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    transition: transform 0.2s ease-in-out;
+}
+
+.feature-card:hover {
+    transform: translateY(-2px);
+}
+
+.feature-icon {
+    margin-bottom: 1rem;
+}
+
+/* Navigation */
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+/* Cards */
+.card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 8px;
+}
+
+.card-header {
+    background-color: var(--primary-color);
+    border-bottom: none;
+    color: white;
+    border-radius: 8px 8px 0 0 !important;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+    padding: 0.5rem 1.5rem;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+/* Tables */
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+/* Success page styling */
+.success-icon {
+    animation: checkmark 0.6s ease-in-out;
+}
+
+@keyframes checkmark {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Dashboard cards */
+.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.bg-success {
+    background-color: var(--success-color) !important;
+}
+
+/* Form styling */
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.form-check-input:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .rating-group {
+        flex-direction: column;
+    }
+    
+    .rating-btn {
+        margin: 2px 0;
+    }
+    
+    .hero-section h1 {
+        font-size: 2rem;
+    }
+    
+    .question-number {
+        width: 25px;
+        height: 25px;
+        line-height: 25px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Loading states */
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Chart containers */
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin: 1rem 0;
+}
