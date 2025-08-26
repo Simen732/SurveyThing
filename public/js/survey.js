@@ -191,3 +191,46 @@ function submitSurvey() {
     
     form.submit();
 }
+
+// Add CSS for number rating styles
+const style = document.createElement('style');
+style.textContent = `
+/* Number Rating Styles */
+.number-rating {
+    display: flex;
+    gap: 10px;
+}
+
+.number-rating input[type="radio"] {
+    display: none;
+}
+
+.number-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 2px solid #dee2e6;
+    border-radius: 50%;
+    background-color: #fff;
+    color: #6c757d;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.number-label:hover {
+    border-color: #0d6efd;
+    color: #0d6efd;
+    background-color: #f8f9ff;
+}
+
+.number-rating input[type="radio"]:checked + .number-label {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+`;
+
+document.head.appendChild(style);

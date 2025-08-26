@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= survey.title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-poll me-2"></i>Survey App
+            </a>
+            <div class="navbar-nav ms-auto">
+                <% if (typeof user !== 'undefined' && user) { %>
+                    <span class="navbar-text me-3">Welcome, <%= user.username %></span>
+                    <% if (user.isAdmin) { %>
+                        <a href="/admin/dashboard" class="btn btn-outline-light btn-sm me-2">Dashboard</a>
+                    <% } %>
+                    <form action="/auth/logout" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+                    </form>
+                <% } else { %>
+                    <a href="/survey" class="nav-link">
+                        <i class="fas fa-list me-1"></i>All Surveys
+                    </a>
+                <% } %>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="mb-0">
+                            <i class="fas fa-clipboard-list me-2"></i>
+                            <%= survey.title %>
+                        </h2>
+                        <% if (survey.description) { %>
+                            <p class="mb-0 mt-2 text-white"><%= survey.description %></p>
+                        <% } %>
+                    </div>
+                    <div class="card-body">
+                        <form action="/survey/<%= survey._id %>/submit" method="POST" id="surveyForm">
+                            <% survey.questions.sort((a, b) => a.order - b.order).forEach((question, index) => { %>
+                                <div class="question-group mb-4">
+                                    <label class="form-label fw-bold">
+                                        <%= index + 1 %>. <%= question.text %>
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    
+                                    <% if (question.type === 'rating') { %>
+                                        <div class="rating-group">
+                                            <div class="d-flex align-items-center gap-3 mt-2">
+                                                <span class="text-muted small">Poor</span>
+                                                <div class="number-rating" data-question="question_<%= question._id %>">
+                                                    <% for (let i = 1; i <= 5; i++) { %>
+                                                        <input type="radio" 
+                                                               name="question_<%= question._id %>" 
+                                                               value="<%= i %>" 
+                                                               id="rating_<%= question._id %>_<%= i %>" 
+                                                               required>
+                                                        <label for="rating_<%= question._id %>_<%= i %>" class="number-label">
+                                                            <%= i %>
+                                                        </label>
+                                                    <% } %>
+                                                </div>
+                                                <span class="text-muted small">Excellent</span>
+                                            </div>
+                                        </div>
+                                    <% } else if (question.type === 'multiple-choice') { %>
+                                        <div class="choice-group mt-2">
+                                            <% question.options.forEach(option => { %>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" 
+                                                           type="radio" 
+                                                           name="question_<%= question._id %>" 
+                                                           value="<%= option.value %>" 
+                                                           id="<%= question._id %>_<%= option.value %>" 
+                                                           required>
+                                                    <label class="form-check-label" for="<%= question._id %>_<%= option.value %>">
+                                                        <%= option.text %>
+                                                    </label>
+                                                </div>
+                                            <% }) %>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            <% }) %>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-between mt-4">
+                                <a href="/survey" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>
+                                    Back to Surveys
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-2"></i>
+                                    Submit Survey
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/survey.js"></script>
+</body>
+</html>

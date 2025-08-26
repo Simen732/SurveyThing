@@ -4,12 +4,27 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo');
 require('dotenv').config();
 
-const authRoutes = require('./routes/auth');
-const surveyRoutes = require('./routes/survey');
-const adminRoutes = require('./routes/admin');
-
 const app = express();
-const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.set('view engine', 'ejs');
+app.use(express.static('public'));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+// Session configuration
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/survey-app'
+  }),
+  cookie: {
+    secure: false, // Set to true if using HTTPS
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/survey-app')
@@ -20,39 +35,27 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/survey-ap
     console.log('Database operations will fail until connection is established.');
   });
 
-// Middleware
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(express.static('public'));
-
-// Session configuration
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
-  resave: false,
-  saveUninitialized: false,
-  store: MongoStore.create({
-    mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/survey-app'
-  }),
-  cookie: {
-    secure: false, // Set to true in production with HTTPS
-    maxAge: 1000 * 60 * 60 * 24 // 24 hours
-  }
-}));
-
-// View engine
-app.set('view engine', 'ejs');
-app.set('views', './views');
+// Make user available to all templates
+app.use((req, res, next) => {
+  res.locals.user = req.session?.user || null;
+  next();
+});
 
 // Routes
-app.use('/auth', authRoutes);
-app.use('/survey', surveyRoutes);
-app.use('/admin', adminRoutes);
-
-// Home route
 app.get('/', (req, res) => {
-  res.render('index', { user: req.session.user });
+  res.render('index');
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+app.use('/auth', require('./routes/auth'));
+app.use('/survey', require('./routes/survey'));
+app.use('/admin', require('./routes/admin'));
+
+// Start server
+const PORT = process.env.PORT || 3000;
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+module.exports = app;

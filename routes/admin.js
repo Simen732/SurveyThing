@@ -1,6 +1,7 @@
 const express = require('express');
 const Survey = require('../models/Survey');
 const Response = require('../models/Response');
+const Feedback = require('../models/Feedback');
 
 const router = express.Router();
 
@@ -58,6 +59,7 @@ router.get('/survey/:id/results', requireAdmin, async (req, res) => {
   try {
     const survey = await Survey.findById(req.params.id);
     const responses = await Response.find({ surveyId: req.params.id });
+    const feedback = await Feedback.find({ surveyId: req.params.id }).sort({ submittedAt: -1 });
     
     if (!survey) {
       return res.render('error', { message: 'Survey not found' });
@@ -96,6 +98,7 @@ router.get('/survey/:id/results', requireAdmin, async (req, res) => {
       survey, 
       results, 
       totalResponses: responses.length,
+      feedback,
       user: req.session.user 
     });
   } catch (error) {
@@ -114,6 +117,110 @@ router.post('/survey/:id/toggle', requireAdmin, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.redirect('/admin/dashboard');
+  }
+});
+
+// Edit survey form
+router.get('/survey/:id/edit', requireAdmin, async (req, res) => {
+  try {
+    const survey = await Survey.findById(req.params.id);
+    if (!survey) {
+      return res.render('error', { message: 'Survey not found' });
+    }
+
+    // Check if survey has responses
+    const responseCount = await Response.countDocuments({ surveyId: survey._id });
+    
+    res.render('admin/edit-survey', { 
+      survey, 
+      responseCount, 
+      user: req.session.user 
+    });
+  } catch (error) {
+    console.error(error);
+    res.render('error', { message: 'Failed to load survey for editing' });
+  }
+});
+
+// Update survey POST
+router.post('/survey/:id/edit', requireAdmin, async (req, res) => {
+  try {
+    const { title, description, questions } = req.body;
+    
+    if (!title || !questions) {
+      return res.render('admin/edit-survey', { 
+        survey: await Survey.findById(req.params.id),
+        responseCount: await Response.countDocuments({ surveyId: req.params.id }),
+        user: req.session.user,
+        error: 'Title and questions are required'
+      });
+    }
+
+    const parsedQuestions = JSON.parse(questions);
+    
+    const survey = await Survey.findByIdAndUpdate(req.params.id, {
+      title,
+      description,
+      questions: parsedQuestions,
+      updatedAt: new Date()
+    }, { new: true });
+
+    if (!survey) {
+      return res.render('error', { message: 'Survey not found' });
+    }
+
+    res.render('admin/edit-success', { 
+      survey,
+      user: req.session.user 
+    });
+  } catch (error) {
+    console.error(error);
+    try {
+      const survey = await Survey.findById(req.params.id);
+      const responseCount = await Response.countDocuments({ surveyId: req.params.id });
+      res.render('admin/edit-survey', { 
+        survey,
+        responseCount,
+        user: req.session.user,
+        error: 'Failed to update survey. Please check your input and try again.'
+      });
+    } catch (err) {
+      res.render('error', { message: 'Failed to update survey' });
+    }
+  }
+});
+
+// Delete survey (only inactive surveys)
+router.post('/survey/:id/delete', requireAdmin, async (req, res) => {
+  try {
+    const survey = await Survey.findById(req.params.id);
+    
+    if (!survey) {
+      return res.redirect('/admin/dashboard');
+    }
+
+    // Check if survey is active - only allow deletion of inactive surveys
+    if (survey.isActive) {
+      return res.render('error', { 
+        message: 'Cannot delete active surveys. Please deactivate the survey first.' 
+      });
+    }
+
+    // Delete all responses associated with this survey
+    await Response.deleteMany({ surveyId: survey._id });
+    
+    // Delete the survey
+    await Survey.findByIdAndDelete(req.params.id);
+    
+    console.log(`Survey "${survey.title}" and all associated responses deleted by admin: ${req.session.user.username}`);
+    
+    // Redirect to dashboard with success message
+    res.redirect('/admin/dashboard?deleted=true');
+  } catch (error) {
+    console.error('Error deleting survey:', error);
+    res.render('error', { 
+      message: 'Failed to delete survey. Please try again.' 
+    });
   }
 });
 

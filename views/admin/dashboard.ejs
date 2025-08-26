@@ -26,6 +26,15 @@
     </nav>
 
     <div class="container mt-4">
+        <!-- Success message for survey deletion -->
+        <% if (typeof req !== 'undefined' && req.query && req.query.deleted === 'true') { %>
+            <div class="alert alert-success alert-dismissible fade show">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>Success!</strong> Survey and all associated responses have been deleted permanently.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% } %>
+        
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1>
                 <i class="fas fa-tachometer-alt me-2"></i>
@@ -128,6 +137,10 @@
                                                    class="btn btn-outline-info" title="View Results">
                                                     <i class="fas fa-chart-bar"></i>
                                                 </a>
+                                                <a href="/admin/survey/<%= survey._id %>/edit" 
+                                                   class="btn btn-outline-secondary" title="Edit Survey">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
                                                 <form action="/admin/survey/<%= survey._id %>/toggle" 
                                                       method="POST" class="d-inline">
                                                     <button type="submit" class="btn btn-outline-warning" 
@@ -135,6 +148,14 @@
                                                         <i class="fas fa-<%= survey.isActive ? 'pause' : 'play' %>"></i>
                                                     </button>
                                                 </form>
+                                                <% if (!survey.isActive) { %>
+                                                    <button type="button" class="btn btn-outline-danger delete-survey-btn" 
+                                                            title="Delete Survey" 
+                                                            data-survey-id="<%= survey._id %>"
+                                                            data-survey-title="<%= survey.title %>">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                <% } %>
                                             </div>
                                         </td>
                                     </tr>
@@ -147,6 +168,63 @@
         </div>
     </div>
 
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                        Confirm Delete
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-warning me-2"></i>
+                        <strong>Warning:</strong> This action cannot be undone!
+                    </div>
+                    <p>Are you sure you want to permanently delete the survey:</p>
+                    <p><strong id="surveyTitleToDelete"></strong></p>
+                    <p class="text-muted">This will also delete all associated responses and cannot be recovered.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </button>
+                    <form id="deleteForm" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-2"></i>Delete Permanently
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Handle delete confirmation
+        document.addEventListener('DOMContentLoaded', function() {
+            const deleteButtons = document.querySelectorAll('.delete-survey-btn');
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+            const deleteForm = document.getElementById('deleteForm');
+            const surveyTitleElement = document.getElementById('surveyTitleToDelete');
+
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const surveyId = this.getAttribute('data-survey-id');
+                    const surveyTitle = this.getAttribute('data-survey-title');
+                    
+                    // Update modal content
+                    surveyTitleElement.textContent = surveyTitle;
+                    deleteForm.action = `/admin/survey/${surveyId}/delete`;
+                    
+                    // Show modal
+                    deleteModal.show();
+                });
+            });
+        });
+    </script>
 </body>
 </html>
